@@ -28,4 +28,19 @@ scale_fill_discrete = scale_fill_viridis_d
 theme_set(theme_minimal() + theme(legend.position = "bottom"))
 ```
 
-
+## Problem 2
+Import and clean the data.
+```{r}
+homicide = 
+  read_csv("https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv")%>%
+  janitor::clean_names() %>%
+  mutate(city_state = str_c(city, sep = ",", state)) %>%
+  mutate(status = ifelse(disposition == "Closed by arrest", "0", "1")) %>%
+  mutate(status = as.integer(status)) %>%
+  filter(city_state != "Dallas,TX") %>%
+  filter(city_state != "Phoenix,AZ") %>%
+  filter(city_state != "Kansas City,MO") %>%
+  filter(city_state != "Tulsa,AL") %>%
+  filter(victim_race == "White" | victim_race == "Black") %>%
+  mutate(victim_age = as.numeric(victim_age))
+```
