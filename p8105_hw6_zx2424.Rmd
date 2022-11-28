@@ -44,3 +44,15 @@ homicide =
   filter(victim_race == "White" | victim_race == "Black") %>%
   mutate(victim_age = as.numeric(victim_age))
 ```
+
+Fit a logistic regression with resolved vs unresolved as the outcome and victim age, sex and race as predictors for Baltimore, MD. And save the output as R object "Baltimore_fit".
+```{r}
+Baltimore_df = homicide %>%
+  filter(city_state == "Baltimore,MD") %>%
+  select(status, victim_race, victim_sex, victim_age)
+
+Baltimore_fit = 
+  Baltimore_df %>%
+  glm(status ~ victim_age + victim_sex + victim_race, data = ., family = binomial())
+```
+
