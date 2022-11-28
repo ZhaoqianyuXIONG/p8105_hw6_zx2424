@@ -61,12 +61,12 @@ Apply broom::tidy() to this object.
 broom::tidy(Baltimore_fit)
 ```
 
-Obtain the estimate keeping all other variables fixed. The estimate for solving homicides comparing male victims to female victims is 0.854.
+Obtain the estimate keeping all other variables fixed. The estimated OR for solving homicides comparing male victims to female victims is 2.35.
 ```{r}
 Baltimore_fit %>%
   broom::tidy() %>%
   select(term, estimate) %>%
-  select(term, estimate) %>%
+  mutate(OR = exp(estimate)) %>%
   filter(term == "victim_sexMale")
 ```
 
@@ -75,17 +75,26 @@ Obtain the adjusted confidence interval of adjusted odds ratio keeping all other
 exp(confint(Baltimore_fit)) 
 ```
 
-Run glm for each cities in my dataset. 
+Run glm for each cities in my dataset. And extract the adjusted odds ratio (and CI) for solving homicides comparing male victims to female victims.
 ```{r}
-all_fit = homicide %>%
+all_fit = 
+  homicide %>%
   select(city_state, status, victim_race, victim_sex, victim_age) %>%
   nest(data = -city_state) %>%
   mutate(
     models = map(data, ~glm(status ~ victim_age + victim_sex + victim_race, data = ., family = binomial())),
-    results = map(models, broom::tidy)) %>%
+    results = map(models, broom::tidy),
+    CI = map(models, confint)) %>%
   select(-data, -models) %>%
-  unnest(results)
+  unnest(results) %>%
+  unnest(CI) %>%  
+  filter(term == "victim_sexMale") %>%
+  mutate(
+    OR = exp(estimate),
+    CI_lower = exp(CI[,1]),
+    CI_upper = exp(CI[,2])) %>%
+  select(city_state, term, OR, CI_lower, CI_upper)
+
+  
 ```
-
-
 
