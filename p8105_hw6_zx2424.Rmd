@@ -75,6 +75,17 @@ Obtain the adjusted confidence interval of adjusted odds ratio keeping all other
 exp(confint(Baltimore_fit)) 
 ```
 
+Run glm for each cities in my dataset. 
+```{r}
+all_fit = homicide %>%
+  select(city_state, status, victim_race, victim_sex, victim_age) %>%
+  nest(data = -city_state) %>%
+  mutate(
+    models = map(data, ~glm(status ~ victim_age + victim_sex + victim_race, data = ., family = binomial())),
+    results = map(models, broom::tidy)) %>%
+  select(-data, -models) %>%
+  unnest(results)
+```
 
 
 
