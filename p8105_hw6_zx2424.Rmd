@@ -61,7 +61,7 @@ Apply broom::tidy() to this object.
 broom::tidy(Baltimore_fit)
 ```
 
-Obtain the estimate keeping all other variables fixed.
+Obtain the estimate keeping all other variables fixed. The estimate for solving homicides comparing male victims to female victims is 0.854.
 ```{r}
 Baltimore_fit %>%
   broom::tidy() %>%
@@ -69,4 +69,12 @@ Baltimore_fit %>%
   select(term, estimate) %>%
   filter(term == "victim_sexMale")
 ```
+
+Obtain the adjusted confidence interval of adjusted odds ratio keeping all other variables fixed. The 95% confidence interval is from 1.79 to 3.08.
+```{r}
+exp(confint(Baltimore_fit)) 
+```
+
+
+
 
