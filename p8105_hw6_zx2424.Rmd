@@ -61,3 +61,12 @@ Apply broom::tidy() to this object.
 broom::tidy(Baltimore_fit)
 ```
 
+Obtain the estimate keeping all other variables fixed.
+```{r}
+Baltimore_fit %>%
+  broom::tidy() %>%
+  select(term, estimate) %>%
+  select(term, estimate) %>%
+  filter(term == "victim_sexMale")
+```
+
