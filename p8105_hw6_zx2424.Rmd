@@ -56,3 +56,8 @@ Baltimore_fit =
   glm(status ~ victim_age + victim_sex + victim_race, data = ., family = binomial())
 ```
 
+Apply broom::tidy() to this object.
+```{r}
+broom::tidy(Baltimore_fit)
+```
+
