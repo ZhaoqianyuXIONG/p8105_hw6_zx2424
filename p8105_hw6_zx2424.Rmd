@@ -42,7 +42,8 @@ homicide =
   filter(city_state != "Kansas City,MO") %>%
   filter(city_state != "Tulsa,AL") %>%
   filter(victim_race == "White" | victim_race == "Black") %>%
-  mutate(victim_age = as.numeric(victim_age))
+  mutate(victim_age = as.numeric(victim_age)) %>%
+  filter(victim_sex == "Male" | victim_sex == "Female")
 ```
 
 Fit a logistic regression with resolved vs unresolved as the outcome and victim age, sex and race as predictors for Baltimore, MD. And save the output as R object "Baltimore_fit".
@@ -63,7 +64,7 @@ broom::tidy(Baltimore_fit)
 
 Obtain the estimate keeping all other variables fixed. The estimated OR for solving homicides comparing male victims to female victims is 2.35.
 ```{r}
-Baltimore_fit %>%
+ Baltimore_fit %>%
   broom::tidy() %>%
   select(term, estimate) %>%
   mutate(OR = exp(estimate)) %>%
@@ -75,26 +76,37 @@ Obtain the adjusted confidence interval of adjusted odds ratio keeping all other
 exp(confint(Baltimore_fit)) 
 ```
 
+Write a function to get both OR and CI at the same time.
+```{r}
+OR_and_CI =
+  function(fit){
+    df_1 = fit %>%
+      broom::tidy() %>%
+      filter(term == "victim_sexMale")
+
+    df_2 = fit %>%
+      confint() %>%
+      exp() %>%
+      as_tibble() 
+    
+    tibble(
+      OR = exp(df_1$estimate),
+      Conf_low = as.numeric(df[3,1]),
+      Conf_high = as.numeric(df[3,2])
+    )
+      }
+```
+
 Run glm for each cities in my dataset. And extract the adjusted odds ratio (and CI) for solving homicides comparing male victims to female victims.
 ```{r}
-all_fit = 
   homicide %>%
   select(city_state, status, victim_race, victim_sex, victim_age) %>%
   nest(data = -city_state) %>%
   mutate(
     models = map(data, ~glm(status ~ victim_age + victim_sex + victim_race, data = ., family = binomial())),
-    results = map(models, broom::tidy),
-    CI = map(models, confint)) %>%
-  select(-data, -models) %>%
-  unnest(results) %>%
-  unnest(CI) %>%  
-  filter(term == "victim_sexMale") %>%
-  mutate(
-    OR = exp(estimate),
-    CI_lower = exp(CI[,1]),
-    CI_upper = exp(CI[,2])) %>%
-  select(city_state, term, OR, CI_lower, CI_upper)
-
+    results = ) %>%
   
 ```
+
+
 
