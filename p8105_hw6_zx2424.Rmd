@@ -32,10 +32,10 @@ theme_set(theme_minimal() + theme(legend.position = "bottom"))
 Import and clean the data.
 ```{r}
 homicide = 
-  read_csv("https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv")%>%
+  read_csv("data/homicide-data.csv") %>% 
   janitor::clean_names() %>%
   mutate(city_state = str_c(city, sep = ",", state)) %>%
-  mutate(status = ifelse(disposition == "Closed by arrest", "0", "1")) %>%
+  mutate(status = ifelse(disposition == "Closed by arrest", "1", "0")) %>%
   mutate(status = as.integer(status)) %>%
   filter(city_state != "Dallas,TX") %>%
   filter(city_state != "Phoenix,AZ") %>%
@@ -62,7 +62,7 @@ Apply broom::tidy() to this object.
 broom::tidy(Baltimore_fit)
 ```
 
-Obtain the estimate keeping all other variables fixed. The estimated OR for solving homicides comparing male victims to female victims is 2.35.
+Obtain the estimate keeping all other variables fixed. The estimated OR for solving homicides comparing male victims to female victims is 0.426.
 ```{r}
  Baltimore_fit %>%
   broom::tidy() %>%
@@ -71,7 +71,7 @@ Obtain the estimate keeping all other variables fixed. The estimated OR for solv
   filter(term == "victim_sexMale")
 ```
 
-Obtain the adjusted confidence interval of adjusted odds ratio keeping all other variables fixed. The 95% confidence interval is from 1.79 to 3.08.
+Obtain the adjusted confidence interval of adjusted odds ratio keeping all other variables fixed. The 95% confidence interval is from 0.32 to 0.56.
 ```{r}
 exp(confint(Baltimore_fit)) 
 ```
@@ -91,22 +91,33 @@ OR_and_CI =
     
     tibble(
       OR = exp(df_1$estimate),
-      Conf_low = as.numeric(df[3,1]),
-      Conf_high = as.numeric(df[3,2])
+      Conf_low = as.numeric(df_2[3,1]),
+      Conf_high = as.numeric(df_2[3,2])
     )
       }
 ```
 
 Run glm for each cities in my dataset. And extract the adjusted odds ratio (and CI) for solving homicides comparing male victims to female victims.
 ```{r}
-  homicide %>%
+all_fit = homicide %>%
   select(city_state, status, victim_race, victim_sex, victim_age) %>%
   nest(data = -city_state) %>%
   mutate(
     models = map(data, ~glm(status ~ victim_age + victim_sex + victim_race, data = ., family = binomial())),
-    results = ) %>%
-  
+    results = map(models, OR_and_CI)) %>%
+  select(-data, -models) %>%
+  unnest(results)
+
+all_fit
 ```
 
-
+Create a plot that shows the estimated ORs and CIs for each city. From the plot, we can discover that the odds ratios for solving homicides comparing male victims to female victims of most cities are less than 1, it means that the homicides in which male is less likely to be resolved than those in which the victim is female. Although the situation reverses in Fresno, CA; Stockton, CA; Albuquerque, NM, their confidence intervals are extremely wide, which means that the situation differs for different cases.
+```{r}
+all_fit %>%
+  mutate(city_state = fct_reorder(city_state, OR)) %>%
+  ggplot(aes(x = city_state, y = OR)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = Conf_low, ymax = Conf_high), width = 0.2) +
+  theme(axis.text.x = element_text(angle = 60, hjust = 1))
+```
 
