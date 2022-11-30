@@ -8,6 +8,8 @@ output: github_document
 library(tidyverse)
 library(p8105.datasets)
 library(viridis)
+library(modelr)
+library(mgcv)
 
 knitr::opts_chunk$set(
 	echo = TRUE,
@@ -26,6 +28,8 @@ scale_colour_discrete = scale_colour_viridis_d
 scale_fill_discrete = scale_fill_viridis_d
 
 theme_set(theme_minimal() + theme(legend.position = "bottom"))
+
+set.seed(1)
 ```
 
 ## Problem 2
@@ -120,4 +124,14 @@ all_fit %>%
   geom_errorbar(aes(ymin = Conf_low, ymax = Conf_high), width = 0.2) +
   theme(axis.text.x = element_text(angle = 60, hjust = 1))
 ```
+
+## Problem 3
+Load and clean the data for regression analysis.
+```{r}
+birthweight = read_csv("data/birthweight.csv") %>%
+  drop_na() %>%
+  mutate(babysex = ifelse(babysex == 1, "male", "female"),
+         babysex = fct_relevel(babysex, "male"))
+```
+
 
