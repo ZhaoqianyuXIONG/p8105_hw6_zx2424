@@ -144,6 +144,15 @@ bwt_fit = glmnet(as.matrix(birthweight[2:20]), birthweight$bwt, lambda = 60)
 coef(bwt_fit)
 ```
 
+Make a linear regression model and show a plot of model residuals against fitted values. Although there are some outliers, most points are close to 0 on y-axis.
+```{r}
+bwt_1 = lm(bwt ~ bhead + blength + gaweeks, data = birthweight)
+birthweight %>%
+  add_residuals(bwt_1) %>%
+  add_predictions(bwt_1) %>%
+  ggplot(aes(x = pred, y = resid, color = bwt)) + geom_point()
+```
+
 
 
 
