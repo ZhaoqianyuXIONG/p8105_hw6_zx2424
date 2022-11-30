@@ -159,6 +159,22 @@ bwt_2 = lm(bwt ~ blength + gaweeks, data = birthweight)
 bwt_3 = lm(bwt ~ bhead + blength + babysex + bhead*blength + bhead*babysex + blength*babysex, data = birthweight)
 ```
 
+Obtain cross-validated prediction error for each model.
+```{r}
+cv_df = crossv_mc(birthweight, 100)
+cv_df = cv_df %>%
+  mutate(
+    train = map(train, as_tibble),
+    test = map(test, as_tibble)) %>%
+  mutate(
+    bwt1_mod = map(train, ~lm(bwt ~ bhead + blength + gaweeks, data = .x)),
+    bwt2_mod = map(train, ~lm(bwt ~ blength + gaweeks, data = birthweight), data = .x),
+    bwt3_mod = map(train, ~lm(bwt ~ bhead + blength + babysex + bhead*blength + bhead*babysex + blength*babysex, data = birthweight), data = .x)) %>%
+  mutate(
+    rmse_1 = map2_dbl(bwt1_mod, test, ~rmse(model = .x, data = .y)),
+    rmse_2 = map2_dbl(bwt2_mod, test, ~rmse(model = .x, data = .y)),
+    rmse_3 = map2_dbl(bwt3_mod, test, ~rmse(model = .x, data = .y))) 
+```
 
 
 
