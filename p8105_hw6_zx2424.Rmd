@@ -176,5 +176,17 @@ cv_df = cv_df %>%
     rmse_3 = map2_dbl(bwt3_mod, test, ~rmse(model = .x, data = .y))) 
 ```
 
+Plot the prediction error distribution for each candidate model. Make comparisons by visualization. From the plots, I can conclude that my linear regression model using head circumference, length and gestational age as predictors and the third linear regression model (the one using head circumference, length, sex, and all interactions (including the three-way interaction) between these) are of similar accuracy, both are much more accurate than the second one (One using length at birth and gestational age as predictors (main effects only)).
+```{r}
+cv_df %>%
+  select(starts_with("rmse")) %>%
+  pivot_longer(
+    everything(),
+    names_to = "model",
+    values_to = "rmse",
+    names_prefix = "rmse_") %>%
+  ggplot(aes(x = model, y = rmse)) +
+  geom_boxplot()
+```
 
 
