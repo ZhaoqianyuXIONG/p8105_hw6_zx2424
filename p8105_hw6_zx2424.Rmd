@@ -153,6 +153,12 @@ birthweight %>%
   ggplot(aes(x = pred, y = resid, color = bwt)) + geom_point()
 ```
 
+Fit other two linear regressions as request.
+```{r}
+bwt_2 = lm(bwt ~ blength + gaweeks, data = birthweight)
+bwt_3 = lm(bwt ~ bhead + blength + babysex + bhead*blength + bhead*babysex + blength*babysex, data = birthweight)
+```
+
 
 
 
