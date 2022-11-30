@@ -10,6 +10,7 @@ library(p8105.datasets)
 library(viridis)
 library(modelr)
 library(mgcv)
+library(glmnet)
 
 knitr::opts_chunk$set(
 	echo = TRUE,
@@ -131,7 +132,18 @@ Load and clean the data for regression analysis.
 birthweight = read_csv("data/birthweight.csv") %>%
   drop_na() %>%
   mutate(babysex = ifelse(babysex == 1, "male", "female"),
-         babysex = fct_relevel(babysex, "male"))
+         babysex = fct_relevel(babysex, "male"),
+         malform = as.character(malform),
+         malform = as.factor(malform)) %>%
+  select(bwt, everything())
 ```
+
+Use LASSO to choose predictors. When lamba reach 60, there are only three predictors left to be non-zero, which are "bhead", "blength", and "gaweeks".So I will use these three predictors to fit my regression model.
+```{r}
+bwt_fit = glmnet(as.matrix(birthweight[2:20]), birthweight$bwt, lambda = 60)
+coef(bwt_fit)
+```
+
+
 
 
